@@ -1,0 +1,314 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2024-05-31T02:42:10+08:00",
+    "name": "英灵神殿模组版",
+    "author": "aopkcn@qq.com",
+    "description": "一款适合 1-10 名玩家的残酷探索和生存游戏，以程序生成的炼狱为背景，灵感来自维京文化，包括插件框架BepInEx.",
+    "features": [
+        "steam_disk_space"
+    ],
+    "docker_images": {
+        "ghcr.dockerproxy.com\/aopkcn\/games:valheim": "ghcr.dockerproxy.com\/aopkcn\/games:valheim"
+    },
+    "file_denylist": [],
+    "startup": "export DOORSTOP_ENABLE=TRUE; export DOORSTOP_INVOKE_DLL_PATH=.\/BepInEx\/core\/BepInEx.Preloader.dll; export DOORSTOP_CORLIB_OVERRIDE_PATH=.\/unstripped_corlib; export LD_LIBRARY_PATH=\".\/doorstop_libs:$LD_LIBRARY_PATH\"; export LD_PRELOAD=\"libdoorstop_x64.so:$LD_PRELOAD\"; export templdpath=$LD_LIBRARY_PATH; export LD_LIBRARY_PATH=\".\/linux64:$LD_LIBRARY_PATH\"; export SteamAppId=892970; export LD_LIBRARY_PATH=$templdpath; .\/valheim_server.x86_64 -nographics -batchmode -savedir \".\/存档\" -name \"{{SERVER_NAME}}\" -port {{SERVER_PORT}} -world \"{{WORLD}}\" $( [[ -n \"{{PASSWORD}}\" ]] && echo \" -password \"{{PASSWORD}}\"\" ) -public {{PUBLIC_SERVER}} echo $(case \"${CUSTOM_PRESET}\" in \"正常模式\") PRESET=\"Normal\";; \"休闲模式\") PRESET=\"Casual\";; \"简单模式\") PRESET=\"Easy\";; \"困难模式\") PRESET=\"Hard\";; \"硬核模式\") PRESET=\"Hardcore\";; \"沉浸模式\") PRESET=\"Immersive\";; \"工具锤模式\") PRESET=\"Hammer\";; *) PRESET=\"\";; esac; [[ -n \"$PRESET\" ]] && echo \" -preset $PRESET\") $( [[ \"{{CUSTOM_NOBUILDCOST}}\" == \"1\" ]] && echo \" -setkey nobuildcost\" ) $( [[ \"{{CUSTOM_PLAYEREVENTS}}\" == \"1\" ]] && echo \" -setkey playerevents\" ) $( [[ \"{{CUSTOM_PASSIVEMOBS}}\" == \"1\" ]] && echo \" -setkey passivemobs\" ) $( [[ \"{{CUSTOM_NOMAP}}\" == \"1\" ]] && echo \" -setkey nomap\" ) echo $(case \"${CUSTOM_BATTLE}\" in \"轻松模式\") MODIFIER=\"veryeasy\";; \"简单模式\") MODIFIER=\"easy\";; \"困难模式\") MODIFIER=\"hard\";; \"噩梦模式\") MODIFIER=\"veryhard\";; \"正常模式\") MODIFIER=\"\";; *) MODIFIER=\"\";; esac; [[ -n \"$MODIFIER\" ]] && echo \" -modifier Combat $MODIFIER\") echo $(case \"${CUSTOM_DEATHPENALTY}\" in \"休闲模式\") MODIFIER=\"casual\";; \"轻松模式\") MODIFIER=\"veryeasy\";; \"简单模式\") MODIFIER=\"easy\";; \"困难模式\") MODIFIER=\"hard\";; \"硬核模式\") MODIFIER=\"hardcore\";; \"正常模式\") MODIFIER=\"\";; *) MODIFIER=\"\";; esac; [[ -n \"$MODIFIER\" ]] && echo \" -modifier DeathPenalty $MODIFIER\") echo $(case \"${CUSTOM_RESOURCES}\" in \"0.5倍\") MODIFIER=\"muchless\";; \"0.75倍\") MODIFIER=\"less\";; \"1.5倍\") MODIFIER=\"more\";; \"2倍\") MODIFIER=\"muchmore\";; \"3倍\") MODIFIER=\"most\";; \"正常模式\") MODIFIER=\"\";; *) MODIFIER=\"\";; esac; [[ -n \"$MODIFIER\" ]] && echo \" -modifier Resources $MODIFIER\") echo $(case \"${CUSTOM_RAIDS}\" in \"无\") MODIFIER=\"none\";; \"更少\") MODIFIER=\"muchless\";; \"少\") MODIFIER=\"less\";; \"多\") MODIFIER=\"more\";; \"更多\") MODIFIER=\"muchmore\";; \"正常模式\") MODIFIER=\"\";; *) MODIFIER=\"\";; esac; [[ -n \"$MODIFIER\" ]] && echo \" -modifier Raids $MODIFIER\") echo $(case \"${CUSTOM_PORTALS}\" in \"传送任意物品\") MODIFIER=\"casual\";; \"boss无传送\") MODIFIER=\"hard\";; \"无传送门\") MODIFIER=\"veryhard\";; \"正常模式\") MODIFIER=\"\";; *) MODIFIER=\"\";; esac; [[ -n \"$MODIFIER\" ]] && echo \" -modifier Portals $MODIFIER\") -saveinterval {{BACKUP_INTERVAL}} -backups {{BACKUP_COUNT}} -backupshort {{BACKUP_SHORTTIME}} -backuplong {{BACKUP_LONGTIME}} $( [[ \"{{ENABLE_INSTANCEID}}\" != \"0\" ]] && echo \" -instanceid {{ENABLE_INSTANCEID}}\") $( [[ {{ENABLE_CROSSPLAY}} -eq 1 ]] && echo \" -crossplay \") > >(sed -uE \"{{CONSOLE_FILTER}}\") & trap \"{{STOP}}\" 15; wait $!",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"DungeonDB Start\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\necho -e \"设置Steam登录账户\"\r\n## 以防万一有人删除默认值.\r\nif [ \"${STEAM_USER}\" == \"\" ]; then\r\n    echo -e \"使用匿名用户.\\n\"\r\n    STEAM_USER=anonymous\r\n    STEAM_PASS=\"\"\r\n    STEAM_AUTH=\"\"\r\nelse\r\n    echo -e \"用户设置为 ${STEAM_USER}\"\r\nfi\r\n\r\nrm -rf \/mnt\/server\/*\r\n\r\necho -e \"下载并安装steamcmd\"\r\nmkdir -p \/mnt\/server\/steamcmd\r\ncd \/mnt\/server\r\ncurl -sSL --fail -o steamcmd.tar.gz http:\/\/10.0.0.10\/steamcmd.tar.gz\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\r\nrm steamcmd.tar.gz\r\ncd \/mnt\/server\/steamcmd\r\n\r\n\r\n# SteamCMD 由于某种原因会失败，即使以root身份运行也是如此.\r\n# 无论如何，这会在安装过程结束时更改。.\r\nchown -R root:root \/mnt\r\nexport HOME=\/mnt\/server\r\necho -e \"下载并安装服务端\"\r\ncurl -sSL --fail -o Valheim_dedicated_server.tar.gz http:\/\/10.0.0.10\/Valheim_dedicated_server.tar.gz\r\ntar -xzvf Valheim_dedicated_server.tar.gz -C \/mnt\/server\r\nmv \/mnt\/server\/Valheim_dedicated_server\/* \/mnt\/server\/\r\nrm -r \/mnt\/server\/Valheim_dedicated_server\r\nrm Valheim_dedicated_server.tar.gz\r\n\r\n## 使用steamcmd安装游戏\r\necho -e \"更新验证服务端\"\r\n.\/steamcmd.sh +force_install_dir \/mnt\/server +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} +app_update ${SRCDS_APPID} ${EXTRA_FLAGS} +quit\r\n## 设置32位库\r\nmkdir -p \/mnt\/server\/.steam\/sdk32\r\ncp -v linux32\/steamclient.so ..\/.steam\/sdk32\/steamclient.so\r\n\r\n## 设置64位库\r\nmkdir -p \/mnt\/server\/.steam\/sdk64\r\ncp -v linux64\/steamclient.so ..\/.steam\/sdk64\/steamclient.so\r\n\r\necho -e \"下载安装BepInEx\"\r\nif ! api_response=$(curl -sfSL -H \"accept: application\/json\" \"https:\/\/thunderstore.io\/api\/experimental\/package\/denikson\/BepInExPack_Valheim\/\"); then\r\n        fatal \"错误：无法从Thunderstore.io API检索 BepInEx版本信息\"\r\nfi\r\n\r\ndownload_url=$(jq -r  \".latest.download_url\" <<< \"$api_response\" )\r\nversion_number=$(jq -r  \".latest.version_number\" <<< \"$api_response\" )\r\n    \r\ncd \/mnt\/server\r\n# 设置超时时间为5秒，尝试从首选地址下载\r\ncurl -sSL --fail --connect-timeout 5 -O http:\/\/10.0.0.10\/denikson-BepInExPack_Valheim-${version_number}.zip \\\r\n    && unzip -o denikson-BepInExPack_Valheim-${version_number}.zip \\\r\n    && cp -r \/mnt\/server\/BepInExPack_Valheim\/* \/mnt\/server \\\r\n    || (\r\n        # 如果下载失败，等待1秒，然后使用备用地址\r\n        sleep 1 \\\r\n        && curl -sSL --fail -O $download_url \\\r\n        && unzip -o denikson-BepInExPack_Valheim-${version_number}.zip \\\r\n        && cp -r \/mnt\/server\/BepInExPack_Valheim\/* \/mnt\/server\r\n    )\r\n\r\n\r\necho \"清理文件...\"\r\nrm -fR BepInEx\/plugins\/Valheim.DisplayBepInExInfo.dll\r\nrm -fR changelog.txt\r\nrm -fR start_game_bepinex.sh\r\nrm -fR start_server_bepinex.sh\r\nrm -fR CHANGELOG.md\r\nrm -fR BepInExPack_Valheim\r\nrm -fR icon.png\r\nrm -fR denikson-BepInExPack_Valheim-*\r\nrm -fR manifest.json\r\nrm -fR README.md\r\nrm -fR docker\r\nrm -fR Valheim Dedicated Server Manual.pdf\r\nrm -fR start_server.sh\r\nrm -fR start_server_xterm.sh\r\nrm -fR docker_start_server.sh\r\n\r\necho \"安装完成-点击开始启动服务器【资源工坊】-https:\/\/www.aopk.cn\"",
+            "container": "ghcr.dockerproxy.com\/aopkcn\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "自动更新",
+            "description": "开启后每次启动检查更新",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "公共服务器",
+            "description": "开启后服务器列表公开访问",
+            "env_variable": "PUBLIC_SERVER",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "服务器名称",
+            "description": "服务器浏览器中显示的名称.",
+            "env_variable": "SERVER_NAME",
+            "default_value": "资源工坊服务器",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:60",
+            "field_type": "text"
+        },
+        {
+            "name": "服务器密码",
+            "description": "服务器密码.如果你不想使用密码请安装无需密码的插件访问https:\/\/www.aopk.cn\/21291.html，否则不能为空!![注意：最低6位，否则服务器启动失败]",
+            "env_variable": "PASSWORD",
+            "default_value": "123456",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "世界修改器预设",
+            "description": "设置预设将覆盖任何之前的设置。",
+            "env_variable": "CUSTOM_PRESET",
+            "default_value": "正常模式",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "in:正常模式,休闲模式,简单模式,困难模式,硬核模式,沉浸模式,工具锤模式",
+            "field_type": "text"
+        },
+        {
+            "name": "自定义世界战斗",
+            "description": "设置战斗模式",
+            "env_variable": "CUSTOM_BATTLE",
+            "default_value": "正常模式",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "in:轻松模式,简单模式,正常模式,困难模式,噩梦模式",
+            "field_type": "text"
+        },
+        {
+            "name": "自定义世界死亡惩罚",
+            "description": "设置死亡惩罚模式",
+            "env_variable": "CUSTOM_DEATHPENALTY",
+            "default_value": "正常模式",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "in:休闲模式,轻松模式,简单模式,正常模式,困难模式,硬核模式",
+            "field_type": "text"
+        },
+        {
+            "name": "自定义世界资源量",
+            "description": "设置资源倍率",
+            "env_variable": "CUSTOM_RESOURCES",
+            "default_value": "正常模式",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "in:0.5倍,0.75倍,正常模式,1.5倍,2倍,3倍",
+            "field_type": "text"
+        },
+        {
+            "name": "自定义世界突袭频率",
+            "description": "设置突袭频率",
+            "env_variable": "CUSTOM_RAIDS",
+            "default_value": "正常模式",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "in:无,更少,少,正常模式,多,更多",
+            "field_type": "text"
+        },
+        {
+            "name": "自定义世界传送门",
+            "description": "设置传送门类型",
+            "env_variable": "CUSTOM_PORTALS",
+            "default_value": "正常模式",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "in:传送任意物品,正常模式,boss无传送,无传送门",
+            "field_type": "text"
+        },
+        {
+            "name": "世界修改器无建造成本",
+            "description": "开启世界修改器无建造成本",
+            "env_variable": "CUSTOM_NOBUILDCOST",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "世界修改器根据玩家进度突袭",
+            "description": "开启世界修改器根据玩家进度突袭",
+            "env_variable": "CUSTOM_PLAYEREVENTS",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "世界修改器被动敌对生物",
+            "description": "开启世界修改器被动敌对生物",
+            "env_variable": "CUSTOM_PASSIVEMOBS",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "世界修改器无地图",
+            "description": "开启世界修改器无地图",
+            "env_variable": "CUSTOM_NOMAP",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "世界名称",
+            "description": "在多个已保存的世界之间切换时要加载的名称.[注意：不得使用中文和特殊字符]",
+            "env_variable": "WORLD",
+            "default_value": "Dedicated",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "备份间隔",
+            "description": "在几秒钟内改变世界的保存频率。 默认值：1800（30 分钟）.",
+            "env_variable": "BACKUP_INTERVAL",
+            "default_value": "1800",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|min:0",
+            "field_type": "text"
+        },
+        {
+            "name": "备份数量",
+            "description": "设置将保留多少个自动备份。 第一个是“短”备份长度，其余的是“长”备份长度。 使用默认值意味着 1 个备份是 2 小时前的，3 个备份是相隔 12 小时的。 默认值：4。",
+            "env_variable": "BACKUP_COUNT",
+            "default_value": "3",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|numeric|min:0",
+            "field_type": "text"
+        },
+        {
+            "name": "短期备份",
+            "description": "设置第一次自动备份之间的时间间隔（以秒为单位）. 默认值：7200（2 小时）.",
+            "env_variable": "BACKUP_SHORTTIME",
+            "default_value": "7200",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|numeric|min:0",
+            "field_type": "text"
+        },
+        {
+            "name": "长期备份",
+            "description": "设置后续自动备份之间的时间间隔（以秒为单位）. 默认值：43200（12 小时）.",
+            "env_variable": "BACKUP_LONGTIME",
+            "default_value": "43200",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|numeric|min:0",
+            "field_type": "text"
+        },
+        {
+            "name": "测试分支",
+            "description": "用于切换测试版本，开启自动更新，重启服务器后自动下载，如切回正式版请在设置页点击重新安装",
+            "env_variable": "SRCDS_BETAID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "max:30",
+            "field_type": "text"
+        },
+        {
+            "name": "测试密码",
+            "description": "切换分支使用的密码",
+            "env_variable": "SRCDS_BETAPASS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "max:30",
+            "field_type": "text"
+        },
+        {
+            "name": "启用跨平台游戏",
+            "description": "启用跨平台游戏支持,使用加入码连接服务器，不推荐！",
+            "env_variable": "ENABLE_CROSSPLAY",
+            "default_value": "0",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "实例标识",
+            "description": "如果您从同一MAC地址使用相同的端口托管多个服务器，请为每个服务器写入一个唯一的标识以确保它们获得唯一的PlayFab ID",
+            "env_variable": "ENABLE_INSTANCEID",
+            "default_value": "0",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|numeric|min:0",
+            "field_type": "text"
+        },
+        {
+            "name": "[系统]控制台过滤器",
+            "description": "从控制台中删除不需要的输出.",
+            "env_variable": "CONSOLE_FILTER",
+            "default_value": "\/^\\(Filename:.*Line:[[:space:]]+[[:digit:]]+\\)$\/d; \/^([[:space:]]+)?$\/d; \/^Load DLL:\/d; \/^Fallback handler\/d; \/^WARNING: Shader\/d; \/^ERROR: Shader\/d; \/^The shader\/d; \/^The image\/d",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "string",
+            "field_type": "text"
+        },
+        {
+            "name": "[系统]LD库路径",
+            "description": "需要加载服务器库.",
+            "env_variable": "LD_LIBRARY_PATH",
+            "default_value": ".\/linux64",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "[系统]应用程序ID",
+            "description": "用于自动更新的 Valheim steam 应用程序 ID.",
+            "env_variable": "SRCDS_APPID",
+            "default_value": "896660",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "nullable|numeric",
+            "field_type": "text"
+        },
+        {
+            "name": "[系统] 关机命令",
+            "description": "",
+            "env_variable": "STOP",
+            "default_value": "kill -2 $!; wait;",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "验证完整性",
+            "description": "开启这项需要开启自动更新，开启后启动服务器时验证完整性",
+            "env_variable": "VALIDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        }
+    ]
+}

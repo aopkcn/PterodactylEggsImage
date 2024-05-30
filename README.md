@@ -1,5 +1,8 @@
-# games
-翼龙面板使用的镜像
-# games:valheim
-这是英灵神殿开服面板预设专用镜像
-- 修正时间为:Asia/Shanghai
+### [游戏](/games)
+* [`valheim`](/games/valheim)
+  * `ghcr.io/aopkcn/games:valheim`
+	
+### [安装镜像](/installers)
+
+* [`debian-install`](/installers/debian)
+  * `ghcr.io/aopkcn/installers:debian`

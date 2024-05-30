@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# 添加设置源的命令
-cat > /etc/apt/sources.list << EOF
-deb https://mirrors.cloud.tencent.com/debian/ bullseye main contrib non-free
-EOF
-
 # 构建镜像
 docker build -t games:valheim .
 
