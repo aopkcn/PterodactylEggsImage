@@ -1,0 +1,172 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2024-06-02T07:04:12+08:00",
+    "name": "NapCat客户端",
+    "author": "aopkcn@qq.com",
+    "description": "QQNT无头客户端",
+    "features": null,
+    "docker_images": {
+        "bot:napcat": "bot:napcat"
+    },
+    "file_denylist": [],
+    "startup": "export DOORSTOP_ENABLE=TRUE; .\/napcat.sh  $( [[ -n \"{{ACCOUNT}}\" ]] && echo \"-q {{ACCOUNT}}\" )",
+    "config": {
+        "files": "{\r\n    \"config\/webui.json\": {\r\n        \"parser\": \"json\",\r\n        \"find\": {\r\n            \"port\": \"{{server.build.default.port}}\",\r\n            \"token\": \"{{server.build.env.WEBUI_TOKEN}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \"Current WebUi is running at IP\"\r\n}",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\nrm -rf \/mnt\/server\/*\r\n\r\ncd \/mnt\/server\r\necho -e \"下载并安装NapCatQQ\"\r\n\r\n    # 获取最新版本号\r\n    VERSION=$(curl -sSL https:\/\/api.github.com\/repos\/NapNeko\/NapCatQQ\/releases\/latest | grep '\"tag_name\":' | sed -E 's\/.*\"tag_name\":\\s*\"([^\"]+)\".*\/\\1\/')\r\n\r\n    # 获取架构信息\r\n    ARCH=$(arch | sed s\/aarch64\/arm64\/ | sed s\/x86_64\/x64\/)\r\n    # 下载文件，设置超时为1分钟\r\n    DOWNLOAD_URL=\"https:\/\/mirror.ghproxy.com\/https:\/\/github.com\/NapNeko\/NapCatQQ\/releases\/download\/${VERSION}\/NapCat.linux.${ARCH}.zip\"\r\n\r\n    curl -X GET -L $DOWNLOAD_URL -o NapCat.linux.${ARCH}.zip\r\n  \r\n    # 检查文件是否存在并解压文件\r\n    if [ -f NapCat.linux.${ARCH}.zip ]; then\r\n        unzip -o NapCat.linux.${ARCH}.zip\r\n        mv NapCat.linux.${ARCH}\/* \/mnt\/server\r\n        # 删除不需要的文件\r\n        rm -fR README.md\r\n        rm -fR NapCat.linux.${ARCH}\r\n        rm -fR NapCat.linux.${ARCH}.zip\r\n    else\r\n        echo \"NapCat.linux.${ARCH}.zip 不存在\"\r\n    fi\r\n\r\n \r\n\r\necho -e \"安装完成！\"",
+            "container": "ghcr.dockerproxy.com\/parkervcp\/installers:alpine",
+            "entrypoint": "\/bin\/sh"
+        }
+    },
+    "variables": [
+        {
+            "name": "快速登录",
+            "description": "设置快速登录的QQ号",
+            "env_variable": "ACCOUNT",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "max:11",
+            "field_type": "text"
+        },
+        {
+            "name": "网页令牌",
+            "description": "设置网页登录的密码",
+            "env_variable": "WEBUI_TOKEN",
+            "default_value": "qmsg",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|min:4|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "自动更新",
+            "description": "开启后启动服务器执行检查更新",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "启用HTTP服务",
+            "description": "",
+            "env_variable": "HTTP_ENABLE",
+            "default_value": "true",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "启用HTTP心跳",
+            "description": "",
+            "env_variable": "HTTP_HEART_ENABLE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "启用HTTP事件上报",
+            "description": "",
+            "env_variable": "HTTP_POST_ENABLE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "启用正向 WebSocket 服务",
+            "description": "",
+            "env_variable": "WS_ENABLE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "启用反向 WebSocket 服务",
+            "description": "",
+            "env_variable": "WSR_ENABLE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "反向 WebSocket 监听地址",
+            "description": "",
+            "env_variable": "WS_URLS",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "string",
+            "field_type": "text"
+        },
+        {
+            "name": " WebSocket 服务心跳间隔",
+            "description": "",
+            "env_variable": "HEART_INTERVAL",
+            "default_value": "60000",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|min:0",
+            "field_type": "text"
+        },
+        {
+            "name": "Access token",
+            "description": "",
+            "env_variable": "TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "string",
+            "field_type": "text"
+        },
+        {
+            "name": "新消息上报格式",
+            "description": "",
+            "env_variable": "MESSAGE_POST_FORMAT",
+            "default_value": "array",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "in:array,string",
+            "field_type": "text"
+        },
+        {
+            "name": "音乐卡片签名地址",
+            "description": "",
+            "env_variable": "MUSIC_SIGN_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "string",
+            "field_type": "text"
+        },
+        {
+            "name": "上报 Bot 自身发送的消息",
+            "description": "",
+            "env_variable": "RSM_ENABLE",
+            "default_value": "false",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        }
+    ]
+}
