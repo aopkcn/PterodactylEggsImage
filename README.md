@@ -4,5 +4,5 @@
 	
 ### [安装镜像](/installers)
 
-* [`debian-install`](/installers/debian)
+* [`debian-安装`](/installers/debian)
   * `ghcr.io/aopkcn/installers:debian`
