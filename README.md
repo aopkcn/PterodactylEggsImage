@@ -1,5 +1,5 @@
 ### [游戏](/games)
-* [`valheim`](/games/valheim)
+* [`英灵神殿`](/games/valheim)
   * `ghcr.io/aopkcn/games:valheim`
 	
 ### [安装镜像](/installers)
