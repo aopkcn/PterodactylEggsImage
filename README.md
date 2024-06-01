@@ -1,8 +1,18 @@
-### [游戏](/games)
+#### [游戏](/games)
 * [`英灵神殿`](/games/valheim)
   * `ghcr.io/aopkcn/games:valheim`
-	
-### [安装镜像](/installers)
-
-* [`debian-安装`](/installers/debian)
-  * `ghcr.io/aopkcn/installers:debian`
+  * `docker.io/aopkcn/games:valheim`
+  * `registry.cn-chengdu.aliyuncs.com/aopkcn/games:valheim`
+* [`debian-安装`](/games/installers/debian)
+  * `ghcr.io/aopkcn/games:installers`	
+  * `docker.io/aopkcn/games:installers`	
+  * `registry.cn-chengdu.aliyuncs.com/aopkcn/games:installers`	
+#### [APP](/app)
+* [`NapCat`](/app/NapCat)
+  * `ghcr.io/aopkcn/app:napcat`
+  * `docker.io/aopkcn/app:napcat`
+  * `registry.cn-chengdu.aliyuncs.com/aopkcn/app:napcat`
+* [`qmsg`](/app/qmsg)
+  * `ghcr.io/aopkcn/app:qmsg`
+  * `docker.io/aopkcn/app:qmsg`
+  * `registry.cn-chengdu.aliyuncs.com/aopkcn/app:qmsg`
