@@ -3,10 +3,20 @@
   * `ghcr.io/aopkcn/games:valheim`
   * `docker.io/aopkcn/games:valheim`
   * `registry.cn-chengdu.aliyuncs.com/aopkcn/games:valheim`
-* [`debian-安装`](/games/installers/debian)
-  * `ghcr.io/aopkcn/games:installers`	
-  * `docker.io/aopkcn/games:installers`	
-  * `registry.cn-chengdu.aliyuncs.com/aopkcn/games:installers`	
+
+#### [安装](/installers)
+* [`Debian`](/installers/debian)
+  * `ghcr.io/aopkcn/installers:debian`	
+  * `docker.io/aopkcn/installers:debian`	
+  * `registry.cn-chengdu.aliyuncs.com/aopkcn/installers:debian`	
+* [`Alpine`](/installers/alpine)
+  * `ghcr.io/aopkcn/installers:alpine`	
+  * `docker.io/aopkcn/installers:alpine`	
+  * `registry.cn-chengdu.aliyuncs.com/aopkcn/installers:alpine`
+* [`Ubuntu`](/installers/ubuntu)
+  * `ghcr.io/aopkcn/installers:ubuntu`	
+  * `docker.io/aopkcn/installers:ubuntu`	
+  * `registry.cn-chengdu.aliyuncs.com/aopkcn/installers:ubuntu`
 #### [APP](/app)
 * [`NapCat`](/app/NapCat)
   * `ghcr.io/aopkcn/app:napcat`

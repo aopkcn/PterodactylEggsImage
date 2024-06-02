@@ -1,82 +1,95 @@
 #!/bin/bash
 
-
-TZ=${TZ:-UTC}
+# è®¾ç½®é»˜è®¤æ—¶åŒºä¸º UTC+8
+TZ=${TZ:-UTC+8}
 export TZ
-# ½« Docker ÄÚ²¿ IP µØÖ·Ìá¹©¸ø½ø³ÌÊ¹ÓÃ¡£
+
+# è·å– Docker å†…éƒ¨ IP åœ°å€
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
 export INTERNAL_IP
 
+# åˆ‡æ¢åˆ°å·¥ä½œç›®å½•
 cd /home/container || exit 1
 
-chech_quotes(){
+# å‡½æ•°ï¼šæ£€æŸ¥å¼•å·
+check_quotes() {
     local input="$1"
-    if [ "${input:0:1}" != '"' ] ; then
-        if [ "${input:0:1}" != '[' ] ; then
+    if [[ "${input:0:1}" != '"' ]]; then
+        if [[ "${input:0:1}" != '[' ]]; then
             input="[\"$input\"]"
         fi
     else
         input="[$input]"
     fi
-    echo $input
+    echo "$input"
 }
 
-# Èç¹ûÎ´ÉèÖÃ×Ô¶¯¸üĞÂ»òÕßÉèÖÃÎª 1£¬Ôò¸üĞÂ
-if [ -z ${AUTO_UPDATE} ] || [ "${AUTO_UPDATE}" == "1" ]; then
-
-    # »ñÈ¡×îĞÂ°æ±¾ºÅ
+# è‡ªåŠ¨æ›´æ–°
+if [[ -z ${AUTO_UPDATE} || "${AUTO_UPDATE}" == "1" ]]; then
+    # è·å–æœ€æ–°ç‰ˆæœ¬å·
     VERSION=$(curl -sSL https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name":\s*"([^"]+)".*/\1/')
 
-    # »ñÈ¡¼Ü¹¹ĞÅÏ¢
-    ARCH=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/x64/)
-    # ÏÂÔØÎÄ¼ş£¬ÉèÖÃ³¬Ê±Îª1·ÖÖÓ
+    # è·å–æ¶æ„ä¿¡æ¯
+    ARCH=$(dpkg --print-architecture | sed 's/amd64/x64/' | sed 's/arm64/arm64/')
     DOWNLOAD_URL="https://mirror.ghproxy.com/https://github.com/NapNeko/NapCatQQ/releases/download/${VERSION}/NapCat.linux.${ARCH}.zip"
 
+    # ä¸‹è½½å¹¶è§£å‹æ–‡ä»¶
     curl -s -X GET -L $DOWNLOAD_URL -o NapCat.linux.${ARCH}.zip
-
-    # ¼ì²éÎÄ¼şÊÇ·ñ´æÔÚ²¢½âÑ¹ÎÄ¼ş
     if [ -f NapCat.linux.${ARCH}.zip ]; then
-        unzip -o NapCat.linux.${ARCH}.zip
-        mv NapCat.linux.${ARCH}/* /home/container
-        # É¾³ı²»ĞèÒªµÄÎÄ¼ş
-        rm -fR NapCat.linux.${ARCH}
+        unzip -o NapCat.linux.${ARCH}.zip -d /home/container
+        rm -f NapCat.linux.${ARCH}.zip
     else
-        echo "NapCat.linux.${ARCH}.zip ²»´æÔÚ"
+        echo "NapCat.linux.${ARCH}.zip ä¸å­˜åœ¨"
     fi
-
 else
-    echo -e "×Ô¶¯¸üĞÂÎ´¿ªÆô¡£Ö±½ÓÆô¶¯·şÎñÆ÷"
+    echo "è‡ªåŠ¨æ›´æ–°æœªå¼€å¯ã€‚ç›´æ¥å¯åŠ¨æœåŠ¡å™¨"
 fi
-CONFIG_PATH=config/onebot11_$ACCOUNT.json
+
+# è®¾ç½® WebUI é…ç½®
+echo "{\"port\": $SERVER_PORT,\"token\": \"$WEBUI_TOKEN\",\"loginRate\": 3}" > config/webui.json
+
+# è®¾ç½®é…ç½®æ–‡ä»¶è·¯å¾„
+if [ -z "$ACCOUNT" ]; then
+    CONFIG_PATH=config/onebot11.json
+else
+    CONFIG_PATH=config/onebot11_$ACCOUNT.json
+fi
+
+# è®¡ç®—ç«¯å£
 ((HTTP_PORT = SERVER_PORT + 1))
 ((WS_PORT = SERVER_PORT + 2))
-# ÈİÆ÷Ê×´ÎÆô¶¯Ê±Ö´ĞĞ
-if [ ! -f "$CONFIG_PATH" ]; then
-    echo "{\"port\": $SERVER_PORT,\"token\": \"$WEBUI_TOKEN\",\"loginRate\": 3}" > config/webui.json
 
-    : ${WEBUI_TOKEN:=''}
-    : ${HTTP_PORT:=3000}
-    : ${HTTP_URLS:='[]'}
-    : ${WS_PORT:=3001}
-    : ${HTTP_ENABLE:='false'}
-    : ${HTTP_POST_ENABLE:='false'}
-    : ${WS_ENABLE:='false'}
-    : ${WSR_ENABLE:='false'}
-    : ${WS_URLS:='[]'}
-    : ${HEART_INTERVAL:=60000}
-    : ${TOKEN:=''}
-    : ${F2U_ENABLE:='false'}
-    : ${DEBUG_ENABLE:='false'}
-    : ${LOG_ENABLE:='false'}
-    : ${RSM_ENABLE:='false'}
-    : ${MESSAGE_POST_FORMAT:='array'}
-    : ${HTTP_HOST:=''}
-    : ${WS_HOST:=''}
-    : ${HTTP_HEART_ENABLE:='false'}
-    : ${MUSIC_SIGN_URL:=''}
-    : ${HTTP_SECRET:=''}
-    HTTP_URLS=$(chech_quotes $HTTP_URLS)
-    WS_URLS=$(chech_quotes $WS_URLS)
+# è¾“å‡ºé…ç½®è·¯å¾„
+echo "æ­£åœ¨è®¾ç½®$CONFIG_PATH"
+
+# è®¾ç½®é»˜è®¤å€¼
+: ${WEBUI_TOKEN:=''}
+: ${HTTP_PORT:=3000}
+: ${HTTP_URLS:='[]'}
+: ${WS_PORT:=3001}
+: ${HTTP_ENABLE:='false'}
+: ${HTTP_POST_ENABLE:='false'}
+: ${WS_ENABLE:='false'}
+: ${WSR_ENABLE:='false'}
+: ${WS_URLS:='[]'}
+: ${HEART_INTERVAL:=60000}
+: ${TOKEN:=''}
+: ${F2U_ENABLE:='false'}
+: ${DEBUG_ENABLE:='false'}
+: ${LOG_ENABLE:='false'}
+: ${RSM_ENABLE:='false'}
+: ${MESSAGE_POST_FORMAT:='array'}
+: ${HTTP_HOST:=''}
+: ${WS_HOST:=''}
+: ${HTTP_HEART_ENABLE:='false'}
+: ${MUSIC_SIGN_URL:=''}
+: ${HTTP_SECRET:=''}
+
+# æ£€æŸ¥å¼•å·
+HTTP_URLS=$(check_quotes $HTTP_URLS)
+WS_URLS=$(check_quotes $WS_URLS)
+
+# å†™å…¥é…ç½®æ–‡ä»¶
 cat <<EOF > $CONFIG_PATH
 {
     "http": {
@@ -106,19 +119,22 @@ cat <<EOF > $CONFIG_PATH
     "token": "$TOKEN"
 }
 EOF
-fi
-    # °²×° napcat
+
+# å®‰è£… napcat
 if [ ! -f "napcat.mjs" ]; then
-    rarch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/x64/)
-    unzip -q NapCat.linux.${rarch}.zip
-    mv NapCat.linux.${rarch}/* /
+    ARCH=$(dpkg --print-architecture | sed 's/amd64/x64/' | sed 's/arm64/arm64/')
+    unzip -q NapCat.linux.${ARCH}.zip -d /
 fi
+
+# ç¡®ä¿è„šæœ¬å…·æœ‰æ‰§è¡Œæƒé™
 chmod +x ./napcat.sh
+
+# è®¾ç½® FFMPEG è·¯å¾„
 export FFMPEG_PATH=/usr/bin/ffmpeg
 
-# Ìæ»»Æô¶¯±äÁ¿
-MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
+# æ›¿æ¢å¯åŠ¨å˜é‡
+MODIFIED_STARTUP=$(echo -e "${STARTUP}" | sed -e 's/{{/${/g' -e 's/}}/}/g')
 echo -e ":/home/container$ ${MODIFIED_STARTUP}"
 
-# ÔËĞĞ·şÎñÆ÷
-eval ${MODIFIED_STARTUP}
+# è¿è¡ŒæœåŠ¡å™¨
+eval "${MODIFIED_STARTUP}"

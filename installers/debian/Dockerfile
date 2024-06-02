@@ -1,6 +1,6 @@
 FROM --platform=$TARGETOS/$TARGETARCH debian:bookworm-slim
 
-LABEL author="Ú˜“œ√Œ" maintainer="aopkcn@qq.com"
+LABEL author="ËùºËöÅÊ¢¶" maintainer="aopkcn@qq.com"
 LABEL org.opencontainers.image.source="https://github.com/aopkcn/PterodactylEggsImage"
 ENV DEBIAN_FRONTEND=noninteractive
 

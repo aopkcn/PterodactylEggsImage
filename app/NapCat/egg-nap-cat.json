@@ -10,7 +10,7 @@
     "description": "QQNT无头客户端",
     "features": null,
     "docker_images": {
-        "bot:napcat": "bot:napcat"
+        "registry.cn-chengdu.aliyuncs.com\/aopkcn\/app:napcat": "registry.cn-chengdu.aliyuncs.com\/aopkcn\/app:napcat"
     },
     "file_denylist": [],
     "startup": "export DOORSTOP_ENABLE=TRUE; .\/napcat.sh  $( [[ -n \"{{ACCOUNT}}\" ]] && echo \"-q {{ACCOUNT}}\" )",
@@ -23,7 +23,7 @@
     "scripts": {
         "installation": {
             "script": "#!\/bin\/bash\r\nrm -rf \/mnt\/server\/*\r\n\r\ncd \/mnt\/server\r\necho -e \"下载并安装NapCatQQ\"\r\n\r\n    # 获取最新版本号\r\n    VERSION=$(curl -sSL https:\/\/api.github.com\/repos\/NapNeko\/NapCatQQ\/releases\/latest | grep '\"tag_name\":' | sed -E 's\/.*\"tag_name\":\\s*\"([^\"]+)\".*\/\\1\/')\r\n\r\n    # 获取架构信息\r\n    ARCH=$(arch | sed s\/aarch64\/arm64\/ | sed s\/x86_64\/x64\/)\r\n    # 下载文件，设置超时为1分钟\r\n    DOWNLOAD_URL=\"https:\/\/mirror.ghproxy.com\/https:\/\/github.com\/NapNeko\/NapCatQQ\/releases\/download\/${VERSION}\/NapCat.linux.${ARCH}.zip\"\r\n\r\n    curl -X GET -L $DOWNLOAD_URL -o NapCat.linux.${ARCH}.zip\r\n  \r\n    # 检查文件是否存在并解压文件\r\n    if [ -f NapCat.linux.${ARCH}.zip ]; then\r\n        unzip -o NapCat.linux.${ARCH}.zip\r\n        mv NapCat.linux.${ARCH}\/* \/mnt\/server\r\n        # 删除不需要的文件\r\n        rm -fR README.md\r\n        rm -fR NapCat.linux.${ARCH}\r\n        rm -fR NapCat.linux.${ARCH}.zip\r\n    else\r\n        echo \"NapCat.linux.${ARCH}.zip 不存在\"\r\n    fi\r\n\r\n \r\n\r\necho -e \"安装完成！\"",
-            "container": "ghcr.dockerproxy.com\/parkervcp\/installers:alpine",
+            "container": "registry.cn-chengdu.aliyuncs.com\/aopkcn\/installers:alpine",
             "entrypoint": "\/bin\/sh"
         }
     },
