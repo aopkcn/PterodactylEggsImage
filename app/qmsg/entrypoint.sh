@@ -1,58 +1,170 @@
 #!/bin/bash
-cd /home/container
 
-# ½« Docker ÄÚ²¿ IP µØÖ·Ìá¹©¸ø½ø³ÌÊ¹ÓÃ¡£
+# è®¾ç½®æ—¶åŒºï¼Œé»˜è®¤ä¸º UTC+8
+TZ=${TZ:-UTC+8}
+export TZ
+
+# å°† Docker å†…éƒ¨ IP åœ°å€æä¾›ç»™è¿›ç¨‹ä½¿ç”¨
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
 export INTERNAL_IP
 
+# åˆ‡æ¢åˆ°å·¥ä½œç›®å½•
+cd /home/container || exit 1
 
-# Èç¹ûÎ´ÉèÖÃ×Ô¶¯¸üĞÂ»òÕßÉèÖÃÎª 1£¬Ôò¸üĞÂ
+# å‡½æ•°ï¼šæ£€æŸ¥å¼•å·
+check_quotes() {
+    local input="$1"
+    if [ "${input:0:1}" != '"' ] ; then
+        if [ "${input:0:1}" != '[' ] ; then
+            input="[\"$input\"]"
+        fi
+    else
+        input="[$input]"
+    fi
+    echo $input
+}
+
+# å¦‚æœæœªè®¾ç½®è‡ªåŠ¨æ›´æ–°æˆ–è€…è®¾ç½®ä¸º 1ï¼Œåˆ™æ›´æ–°
 if [ -z ${AUTO_UPDATE} ] || [ "${AUTO_UPDATE}" == "1" ]; then
 
-    # »ñÈ¡×îĞÂ°æ±¾ºÅ
-    VERSION=$(curl -sSL https://fastly.jsdelivr.net/gh/1244453393/QmsgNtClient-NapCatQQ@main/package.json | grep '"version":' | sed -E 's/.*"version":\s*"([0-9]+\.[0-9]+\.[0-9]+)".*/\1/')
+    # è·å–æœ€æ–°ç‰ˆæœ¬å·
+    VERSION=$(curl -sSL https://api.github.com/repos/1244453393/QmsgNtClient-NapCatQQ/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name":\s*"([^"]+)".*/\1/')
 
-    # »ñÈ¡¼Ü¹¹ĞÅÏ¢
+    # æ£€æŸ¥æ˜¯å¦æˆåŠŸè·å–ç‰ˆæœ¬å·
+    if [ -z "$VERSION" ]; then
+        echo "æ— æ³•è·å–æœ€æ–°ç‰ˆæœ¬å·"
+        exit 1
+    fi
+
+    # è·å–æ¶æ„ä¿¡æ¯
     ARCH=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+    
+    # ä¸‹è½½æ–‡ä»¶ï¼Œè®¾ç½®è¶…æ—¶ä¸º1åˆ†é’Ÿ
+    DOWNLOAD_URL="https://mirror.ghproxy.com/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/${VERSION}/QmsgNtClient-NapCatQQ_${ARCH}.zip"
+    curl -s --max-time 60 -L $DOWNLOAD_URL -o QmsgNtClient-NapCatQQ_${ARCH}.zip
 
-    # ÏÂÔØÎÄ¼ş£¬ÉèÖÃ³¬Ê±Îª1·ÖÖÓ
-    DOWNLOAD_URL="https://mirror.ghproxy.com/https://github.com/1244453393/QmsgNtClient-NapCatQQ/releases/download/v${VERSION}/QmsgNtClient-NapCatQQ_${ARCH}.zip"
-
-    curl --max-time 60 -o QmsgNtClient-NapCatQQ.zip $DOWNLOAD_URL
-  
-    curl --max-time 60 -o static.zip https://a.aopk.cn:444/static.zip
-
-    # ¼ì²éÎÄ¼şÊÇ·ñ´æÔÚ²¢½âÑ¹ÎÄ¼ş
-    if [ -f QmsgNtClient-NapCatQQ.zip ]; then
-        unzip -o QmsgNtClient-NapCatQQ.zip
-        # É¾³ı²»ĞèÒªµÄÎÄ¼ş
-        rm -fR QmsgNtClient-NapCatQQ.zip
-        rm -fR napcat.bat
-        rm -fR napcat.ps1
-        rm -fR napcat-log.ps1
-        rm -fR napcat-utf8.bat
-        rm -fR napcat-utf8.ps1
-        rm -fR README.md
+    # æ£€æŸ¥æ–‡ä»¶æ˜¯å¦å­˜åœ¨å¹¶è§£å‹æ–‡ä»¶
+    if [ -f QmsgNtClient-NapCatQQ_${ARCH}.zip ]; then
+        # æ£€æŸ¥zipæ–‡ä»¶æ˜¯å¦æœ‰æ•ˆ
+        if unzip -t QmsgNtClient-NapCatQQ_${ARCH}.zip > /dev/null 2>&1; then
+            unzip -o QmsgNtClient-NapCatQQ_${ARCH}.zip
+            # åˆ é™¤ä¸éœ€è¦çš„æ–‡ä»¶
+            rm -f napcat.bat
+            rm -f napcat.ps1
+            rm -f napcat-log.ps1
+            rm -f napcat-utf8.bat
+            rm -f napcat-utf8.ps1
+            rm -f README.md
+        else
+            echo "ä¸‹è½½çš„æ–‡ä»¶æ— æ•ˆï¼Œæ— æ³•è§£å‹ã€‚"
+            rm -f QmsgNtClient-NapCatQQ_${ARCH}.zip
+        fi
     else
-        echo "QmsgNtClient-NapCatQQ.zip ²»´æÔÚ"
+        echo "QmsgNtClient-NapCatQQ_${ARCH}.zip ä¸å­˜åœ¨"
     fi
 
-    if [ -f static.zip ]; then
-        unzip -o static.zip
-        rm -fR static.zip
-    else
-        echo "static.zip ²»´æÔÚ"
-    fi
 else
-    echo -e "×Ô¶¯¸üĞÂÎ´¿ªÆô¡£Ö±½ÓÆô¶¯·şÎñÆ÷"
+    echo "è‡ªåŠ¨æ›´æ–°æœªå¼€å¯ã€‚ç›´æ¥å¯åŠ¨æœåŠ¡å™¨"
+fi
+
+# è®¾ç½® WebUI é…ç½®
+cat <<EOF > config/webui.json
+{
+    "port": $SERVER_PORT,
+    "token": "$WEBUI_TOKEN",
+    "loginRate": 3
+}
+EOF
+# è®¾ç½®é…ç½®æ–‡ä»¶è·¯å¾„
+if [ -z "$ACCOUNT" ]; then
+    CONFIG_PATH=config/onebot11.json
+else
+    CONFIG_PATH=config/onebot11_$ACCOUNT.json
+fi
+
+# è®¡ç®—ç«¯å£
+((HTTP_PORT = SERVER_PORT + 1))
+((WS_PORT = SERVER_PORT + 2))
+
+# è¾“å‡ºé…ç½®è·¯å¾„
+echo "æ­£åœ¨è®¾ç½®$CONFIG_PATH"
+
+# è®¾ç½®é»˜è®¤å€¼
+: ${WEBUI_TOKEN:=''}
+: ${HTTP_PORT:=3000}
+: ${HTTP_URLS:='[]'}
+: ${WS_PORT:=3001}
+: ${HTTP_ENABLE:='false'}
+: ${HTTP_POST_ENABLE:='false'}
+: ${WS_ENABLE:='false'}
+: ${WSR_ENABLE:='false'}
+: ${WS_URLS:='[]'}
+: ${HEART_INTERVAL:=60000}
+: ${TOKEN:=''}
+: ${F2U_ENABLE:='false'}
+: ${DEBUG_ENABLE:='false'}
+: ${LOG_ENABLE:='false'}
+: ${RSM_ENABLE:='false'}
+: ${MESSAGE_POST_FORMAT:='array'}
+: ${HTTP_HOST:=''}
+: ${WS_HOST:=''}
+: ${HTTP_HEART_ENABLE:='false'}
+: ${MUSIC_SIGN_URL:=''}
+: ${HTTP_SECRET:=''}
+: ${QMSG_KEY:=''}
+: ${QMSG_WEBURL:='https://qmsg.zendee.cn/'}
+
+# æ£€æŸ¥å¼•å·
+HTTP_URLS=$(check_quotes "$HTTP_URLS")
+WS_URLS=$(check_quotes "$WS_URLS")
+
+# å†™å…¥é…ç½®æ–‡ä»¶
+cat <<EOF > $CONFIG_PATH
+{
+    "qmsg": {
+        "qmsgKey": "$QMSG_KEY",
+        "qmsgWebUrl": "$QMSG_WEBURL"
+    },
+    "http": {
+      "enable": ${HTTP_ENABLE},
+      "host": "$HTTP_HOST",
+      "port": ${HTTP_PORT},
+      "secret": "$HTTP_SECRET",
+      "enableHeart": ${HTTP_HEART_ENABLE},
+      "enablePost": ${HTTP_POST_ENABLE},
+      "postUrls": $HTTP_URLS
+    },
+    "ws": {
+      "enable": ${WS_ENABLE},
+      "host": "${WS_HOST}",
+      "port": ${WS_PORT}
+    },
+    "reverseWs": {
+      "enable": ${WSR_ENABLE},
+      "urls": $WS_URLS
+    },
+    "debug": ${DEBUG_ENABLE},
+    "heartInterval": ${HEART_INTERVAL},
+    "messagePostFormat": "$MESSAGE_POST_FORMAT",
+    "enableLocalFile2Url": ${F2U_ENABLE},
+    "musicSignUrl": "$MUSIC_SIGN_URL",
+    "reportSelfMessage": ${RSM_ENABLE},
+    "token": "$TOKEN"
+}
+EOF
+
+# å®‰è£… napcat
+if [ ! -f "napcat.mjs" ]; then
+    ARCH=$(arch | sed 's/aarch64/arm64/' | sed 's/x86_64/amd64/')
+    unzip -q QmsgNtClient-NapCatQQ_${ARCH}.zip
 fi
 
 chmod +x ./napcat.sh
 export FFMPEG_PATH=/usr/bin/ffmpeg
 
-# Ìæ»»Æô¶¯±äÁ¿
-MODIFIED_STARTUP=$(echo -e ${STARTUP} | sed -e 's/{{/${/g' -e 's/}}/}/g')
+# æ›¿æ¢å¯åŠ¨å˜é‡
+MODIFIED_STARTUP=$(echo -e "${STARTUP}" | sed -e 's/{{/${/g' -e 's/}}/}/g')
 echo -e ":/home/container$ ${MODIFIED_STARTUP}"
 
-# ÔËĞĞ·şÎñÆ÷
-eval ${MODIFIED_STARTUP}
+# è¿è¡ŒæœåŠ¡å™¨
+eval "${MODIFIED_STARTUP}"

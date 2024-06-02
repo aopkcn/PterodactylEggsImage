@@ -1,9 +1,11 @@
 #!/bin/bash
-cd /home/container
-
+TZ=${TZ:-UTC+8}
+export TZ
 # 将 Docker 内部 IP 地址提供给进程使用。
 INTERNAL_IP=$(ip route get 1 | awk '{print $(NF-2);exit}')
 export INTERNAL_IP
+
+cd /home/container || exit 1
 
 echo -e "设置Steam登录账户"
 ## 以防万一有人删除默认值.

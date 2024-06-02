@@ -1,9 +1,9 @@
 FROM --platform=$TARGETOS/$TARGETARCH debian:12-slim
 
-LABEL author="ò÷ÒÏÃÎ" maintainer="aopkcn@qq.com"
+LABEL author="è¼èšæ¢¦" maintainer="aopkcn@qq.com"
 
 ENV DEBIAN_FRONTEND=noninteractive
-# °²×°±ØÒªµÄÈí¼ş°ü
+# å®‰è£…å¿…è¦çš„è½¯ä»¶åŒ…
 RUN  useradd -m -d /home/container -s /bin/bash container \ 
      && sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources \
      && apt update \
@@ -36,7 +36,7 @@ RUN  useradd -m -d /home/container -s /bin/bash container \
             /tmp/* \
             /var/tmp/*
 COPY --chown=container:container entrypoint.sh /entrypoint.sh            
-# °²×°Linux QQ
+# å®‰è£…Linux QQ
 RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
     curl -o linuxqq.deb https://dldir1.qq.com/qqfile/qq/QQNT/Linux/QQ_3.2.8_240520_${arch}_01.deb && \
     dpkg -i --force-depends linuxqq.deb && rm linuxqq.deb && \

@@ -4,26 +4,28 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2024-06-02T15:58:47+08:00",
-    "name": "NapCat客户端",
+    "exported_at": "2024-06-02T16:56:36+08:00",
+    "name": "QmsgNtClient-NapCatQQ客户端",
     "author": "aopkcn@qq.com",
-    "description": "QQNT无头客户端",
+    "description": "QmsgNtClient-NapCatQQ的QQ机器人",
     "features": null,
     "docker_images": {
-        "registry.cn-chengdu.aliyuncs.com\/aopkcn\/app:napcat": "registry.cn-chengdu.aliyuncs.com\/aopkcn\/app:napcat"
+        "GitHub": "ghcr.io\/aopkcn\/app:qmsg",
+        "docker": "docker.io\/aopkcn\/app:qmsg",
+        "阿里云": "registry.cn-chengdu.aliyuncs.com\/aopkcn\/app:qmsg"
     },
     "file_denylist": [],
     "startup": "export DOORSTOP_ENABLE=TRUE; .\/napcat.sh  $( [[ -n \"{{ACCOUNT}}\" ]] && echo \"-q {{ACCOUNT}}\" )",
     "config": {
-        "files": "{\r\n    \"config\/webui.json\": {\r\n        \"parser\": \"json\",\r\n        \"find\": {\r\n            \"port\": \"{{server.build.default.port}}\",\r\n            \"token\": \"{{server.build.env.WEBUI_TOKEN}}\"\r\n        }\r\n    }\r\n}",
-        "startup": "{\r\n    \"done\": \"Current WebUi is running at IP\"\r\n}",
+        "files": "{\r\n    \"config\/webui.json\": {\r\n        \"parser\": \"json\",\r\n        \"find\": {\r\n            \"port\": \"{{server.build.default.port}}\",\r\n            \"token\": \"{{server.build.env.WEBTOKEN}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \"[QmsgNtClient-NapCat] [WebUi] Current WebUi is running at IP\"\r\n}",
         "logs": "{}",
         "stop": "^C"
     },
     "scripts": {
         "installation": {
-            "script": "#!\/bin\/bash\r\nrm -rf \/mnt\/server\/*\r\n\r\ncd \/mnt\/server\r\necho -e \"下载并安装NapCatQQ\"\r\n\r\n    # 获取最新版本号\r\n    VERSION=$(curl -sSL https:\/\/api.github.com\/repos\/NapNeko\/NapCatQQ\/releases\/latest | grep '\"tag_name\":' | sed -E 's\/.*\"tag_name\":\\s*\"([^\"]+)\".*\/\\1\/')\r\n\r\n    # 获取架构信息\r\n    ARCH=$(arch | sed s\/aarch64\/arm64\/ | sed s\/x86_64\/x64\/)\r\n    # 下载文件，设置超时为1分钟\r\n    DOWNLOAD_URL=\"https:\/\/mirror.ghproxy.com\/https:\/\/github.com\/NapNeko\/NapCatQQ\/releases\/download\/${VERSION}\/NapCat.linux.${ARCH}.zip\"\r\n\r\n    curl -X GET -L $DOWNLOAD_URL -o NapCat.linux.${ARCH}.zip\r\n  \r\n    # 检查文件是否存在并解压文件\r\n    if [ -f NapCat.linux.${ARCH}.zip ]; then\r\n        unzip -o NapCat.linux.${ARCH}.zip\r\n        mv NapCat.linux.${ARCH}\/* \/mnt\/server\r\n        # 删除不需要的文件\r\n        rm -fR README.md\r\n        rm -fR NapCat.linux.${ARCH}\r\n        rm -fR NapCat.linux.${ARCH}.zip\r\n    else\r\n        echo \"NapCat.linux.${ARCH}.zip 不存在\"\r\n    fi\r\n\r\n \r\n\r\necho -e \"安装完成！\"",
-            "container": "registry.cn-chengdu.aliyuncs.com\/aopkcn\/installers:alpine",
+            "script": "#!\/bin\/bash\r\n\r\n# 清理目标目录\r\nrm -rf \/mnt\/server\/*\r\n\r\necho -e \"下载并安装 QmsgNtClient-NapCatQQ\"\r\n\r\ncd \/mnt\/server\r\n\r\n# 获取最新版本号\r\nVERSION=$(curl -sSL https:\/\/api.github.com\/repos\/1244453393\/QmsgNtClient-NapCatQQ\/releases\/latest | grep '\"tag_name\":' | sed -E 's\/.*\"tag_name\":\\s*\"([^\"]+)\".*\/\\1\/')\r\n\r\n# 检查是否成功获取版本号\r\nif [ -z \"$VERSION\" ]; then\r\n    echo \"无法获取最新版本号\"\r\n    exit 1\r\nfi\r\n\r\necho \"最新版本号: $VERSION\"\r\n\r\n# 获取架构信息\r\nARCH=$(arch | sed 's\/aarch64\/arm64\/' | sed 's\/x86_64\/amd64\/')\r\n\r\n# 下载文件，设置超时为1分钟\r\nDOWNLOAD_URL=\"https:\/\/mirror.ghproxy.com\/https:\/\/github.com\/1244453393\/QmsgNtClient-NapCatQQ\/releases\/download\/${VERSION}\/QmsgNtClient-NapCatQQ_${ARCH}.zip\"\r\n\r\necho \"下载URL: $DOWNLOAD_URL\"\r\n\r\n# 下载文件\r\ncurl -s --max-time 60 -L $DOWNLOAD_URL -o QmsgNtClient-NapCatQQ_${ARCH}.zip\r\n\r\n# 检查文件是否存在并解压文件\r\nif [ -f QmsgNtClient-NapCatQQ_${ARCH}.zip ]; then\r\n    # 检查zip文件是否有效\r\n    if unzip -t QmsgNtClient-NapCatQQ_${ARCH}.zip > \/dev\/null 2>&1; then\r\n        unzip -o QmsgNtClient-NapCatQQ_${ARCH}.zip\r\n        # 删除不需要的文件\r\n        rm -f napcat.bat\r\n        rm -f napcat.ps1\r\n        rm -f napcat-log.ps1\r\n        rm -f napcat-utf8.bat\r\n        rm -f napcat-utf8.ps1\r\n        rm -f README.md\r\n        echo -e \"安装完成！\"\r\n    else\r\n        echo \"下载的文件无效，无法解压。\"\r\n        rm -f QmsgNtClient-NapCatQQ_${ARCH}.zip\r\n    fi\r\nelse\r\n    echo \"QmsgNtClient-NapCatQQ_${ARCH}.zip 不存在\"\r\nfi",
+            "container": "ghcr.dockerproxy.com\/parkervcp\/installers:alpine",
             "entrypoint": "\/bin\/sh"
         }
     },
@@ -49,13 +51,23 @@
             "field_type": "text"
         },
         {
-            "name": "自动更新",
-            "description": "开启后启动服务器执行检查更新",
-            "env_variable": "AUTO_UPDATE",
-            "default_value": "0",
+            "name": "QMSG密钥",
+            "description": "",
+            "env_variable": "QMSG_KEY",
+            "default_value": "",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|boolean",
+            "rules": "max:32",
+            "field_type": "text"
+        },
+        {
+            "name": "QMSG地址",
+            "description": "",
+            "env_variable": "QMSG_WEBURL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "max:32",
             "field_type": "text"
         },
         {
@@ -166,6 +178,16 @@
             "user_viewable": true,
             "user_editable": true,
             "rules": "max:5",
+            "field_type": "text"
+        },
+        {
+            "name": "自动更新",
+            "description": "开启后启动服务器执行检查更新",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
             "field_type": "text"
         }
     ]
