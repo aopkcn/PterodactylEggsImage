@@ -27,27 +27,48 @@ check_quotes() {
 # 自动更新
 if [[ -z ${AUTO_UPDATE} || "${AUTO_UPDATE}" == "1" ]]; then
     # 获取最新版本号
-    VERSION=$(curl -sSL https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name":\s*"([^"]+)".*/\1/')
+    LATEST_VERSION=$(curl -sSL https://api.github.com/repos/NapNeko/NapCatQQ/releases/latest | grep '"tag_name":' | sed -E 's/.*"tag_name":\s*"([^"]+)".*/\1/')
 
-    # 获取架构信息
-    ARCH=$(dpkg --print-architecture | sed 's/amd64/x64/' | sed 's/arm64/arm64/')
-    DOWNLOAD_URL="https://mirror.ghproxy.com/https://github.com/NapNeko/NapCatQQ/releases/download/${VERSION}/NapCat.linux.${ARCH}.zip"
+    # 获取本地版本号
+    LOCAL_VERSION=$(grep '"version":' /home/container/package.json | sed -E 's/.*"version":\s*"([^"]+)".*/\1/')
 
-    # 下载并解压文件
-    curl -s -X GET -L $DOWNLOAD_URL -o NapCat.linux.${ARCH}.zip
-    if [ -f NapCat.linux.${ARCH}.zip ]; then
-        unzip -o NapCat.linux.${ARCH}.zip -d /home/container
-        rm -f NapCat.linux.${ARCH}.zip
+    echo "最新版本: $LATEST_VERSION"
+    echo "本地版本: $LOCAL_VERSION"
+
+    if [ "$LATEST_VERSION" != "$LOCAL_VERSION" ]; then
+        echo "版本不匹配，开始更新..."
+        # 获取架构信息
+        ARCH=$(dpkg --print-architecture | sed 's/amd64/x64/' | sed 's/arm64/arm64/')
+        DOWNLOAD_URL="https://mirror.ghproxy.com/https://github.com/NapNeko/NapCatQQ/releases/download/${LATEST_VERSION}/NapCat.linux.${ARCH}.zip"
+
+        # 下载并解压文件
+        curl -s -X GET -L $DOWNLOAD_URL -o NapCat.linux.${ARCH}.zip
+        if [ -f NapCat.linux.${ARCH}.zip ]; then
+            unzip -o NapCat.linux.${ARCH}.zip -d /home/container
+            mv NapCat.linux.${ARCH}/* /home/container
+            rm -f NapCat.linux.${ARCH}.zip
+            rm -fR README.md
+            rm -fR NapCat.linux.${ARCH}
+            echo "更新完成。"
+        else
+            echo "下载失败: NapCat.linux.${ARCH}.zip 不存在"
+        fi
     else
-        echo "NapCat.linux.${ARCH}.zip 不存在"
+        echo "版本匹配，不需要更新。"
     fi
+
 else
     echo "自动更新未开启。直接启动服务器"
 fi
 
 # 设置 WebUI 配置
-echo "{\"port\": $SERVER_PORT,\"token\": \"$WEBUI_TOKEN\",\"loginRate\": 3}" > config/webui.json
-
+cat <<EOF > config/webui.json
+{
+    "port": $SERVER_PORT,
+    "token": "$WEBUI_TOKEN",
+    "loginRate": 3
+}
+EOF
 # 设置配置文件路径
 if [ -z "$ACCOUNT" ]; then
     CONFIG_PATH=config/onebot11.json
@@ -122,8 +143,7 @@ EOF
 
 # 安装 napcat
 if [ ! -f "napcat.mjs" ]; then
-    ARCH=$(dpkg --print-architecture | sed 's/amd64/x64/' | sed 's/arm64/arm64/')
-    unzip -q NapCat.linux.${ARCH}.zip -d /
+    echo "napcat.mjs文件不存在亲重新安装！"
 fi
 
 # 确保脚本具有执行权限
