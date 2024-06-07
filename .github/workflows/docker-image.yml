@@ -25,30 +25,29 @@ jobs:
         for DOCKERFILE in ${{ steps.find_dockerfiles.outputs.dockerfiles }}; do
           FILE_DIR=$(dirname "${DOCKERFILE}")
           PARENT_DIR=$(basename "${FILE_DIR}")
-          GRANDPARENT_DIR=$(basename $(dirname "${FILE_DIR}"))
-          IMAGE_TAG="${GRANDPARENT_DIR}_${PARENT_DIR}"
+          REPOSITORY_NAME=$(basename $(dirname "${FILE_DIR}"))
+          IMAGE_TAG="${PARENT_DIR}"
 
-          echo "构建镜像: ${IMAGE_TAG}"
+          echo "构建镜像: ${REPOSITORY_NAME:IMAGE_TAG}"
           
           # 构建镜像
-          docker build -t napcat:${IMAGE_TAG} "${FILE_DIR}"
-
+          docker build -t ${REPOSITORY_NAME}:${IMAGE_TAG} "${FILE_DIR}"
           # 推送到 GitHub 容器注册表
           echo "${{ secrets.GHCR_KEY }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
-          GHCR_IMAGE_TAG="ghcr.io/${{ secrets.GHCR_USERNAME }}/napcat:${IMAGE_TAG}"
-          docker tag "napcat:${IMAGE_TAG}" "${GHCR_IMAGE_TAG}"
+          GHCR_IMAGE_TAG="ghcr.io/${{ secrets.GHCR_USERNAME }}/${REPOSITORY_NAME}:${IMAGE_TAG}"
+          docker tag "${REPOSITORY_NAME}:${IMAGE_TAG}" "${GHCR_IMAGE_TAG}"
           docker push "${GHCR_IMAGE_TAG}"
 
           # 推送到 Docker Hub
           echo "${{ secrets.DOCKER_PASSWD }}" | docker login docker.io -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          DOCKER_IMAGE_TAG="docker.io/${{ secrets.DOCKER_USERNAME }}/napcat:${IMAGE_TAG}"
-          docker tag "napcat:${IMAGE_TAG}" "${DOCKER_IMAGE_TAG}"
+          DOCKER_IMAGE_TAG="docker.io/${{ secrets.DOCKER_USERNAME }}/${REPOSITORY_NAME}:${IMAGE_TAG}"
+          docker tag "${REPOSITORY_NAME}:${IMAGE_TAG}" "${DOCKER_IMAGE_TAG}"
           docker push "${DOCKER_IMAGE_TAG}"
 
           # 推送到阿里云容器镜像服务
           echo "${{ secrets.ALICLOUD_PASSWORD }}" | docker login "${{ secrets.ALICLOUD_REGISTRY }}" -u "${{ secrets.ALICLOUD_USERNAME }}" --password-stdin
-          ALICLOUD_IMAGE_TAG="${{ secrets.ALICLOUD_REGISTRY }}/${{ secrets.ALICLOUD_NAMESPACE }}/napcat:${IMAGE_TAG}"
-          docker tag "napcat:${IMAGE_TAG}" "${ALICLOUD_IMAGE_TAG}"
+          ALICLOUD_IMAGE_TAG="${{ secrets.ALICLOUD_REGISTRY }}/${{ secrets.ALICLOUD_NAMESPACE }}/${REPOSITORY_NAME}:${IMAGE_TAG}"
+          docker tag "${REPOSITORY_NAME}:${IMAGE_TAG}" "${ALICLOUD_IMAGE_TAG}"
           docker push "${ALICLOUD_IMAGE_TAG}"
 
         done
