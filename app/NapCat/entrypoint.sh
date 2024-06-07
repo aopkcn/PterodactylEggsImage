@@ -31,6 +31,7 @@ if [[ -z ${AUTO_UPDATE} || "${AUTO_UPDATE}" == "1" ]]; then
 
     # 获取本地版本号
     #LOCAL_VERSION=$(grep '"version":' /home/container/package.json | sed -E 's/.*"version":\s*"([^"]+)".*/\1/')
+    #加V
     LOCAL_VERSION=$(grep '"version":' /home/container/package.json | sed -E 's/.*"version":\s*"([^"]+)".*/v\1/')
     echo "最新版本: $LATEST_VERSION"
     echo "本地版本: $LOCAL_VERSION"
