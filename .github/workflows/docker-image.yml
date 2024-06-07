@@ -14,45 +14,41 @@ jobs:
     - name: 检出代码
       uses: actions/checkout@v4
 
-    - name: 获取触发文件的路径
-      id: get_paths
+    - name: 查找所有Dockerfile
+      id: find_dockerfiles
       run: |
-        MODIFIED_FOLDERS=$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs -I {} dirname {} | sort -u)
-        echo "修改的文件夹：${MODIFIED_FOLDERS}"
-        echo "::set-output name=folders::${MODIFIED_FOLDERS}"
+        DOCKERFILES=$(find . -name 'Dockerfile' | tr '\n' ' ')
+        echo "::set-output name=dockerfiles::${DOCKERFILES}"
 
-    - name: 构建和推送镜像
+    - name: 为每个Dockerfile构建和推送镜像
       run: |
-        for FOLDER in ${{ steps.get_paths.outputs.folders }}; do
-          DOCKERFILE_PATH="${FOLDER}/Dockerfile"
-          if [ -f "${DOCKERFILE_PATH}" ]; then
-            PARENT_DIR=$(basename "${FOLDER}")
-            GRANDPARENT_DIR=$(basename $(dirname "${FOLDER}"))
-            IMAGE_TAG="${GRANDPARENT_DIR}_${PARENT_DIR}"
+        for DOCKERFILE in ${{ steps.find_dockerfiles.outputs.dockerfiles }}; do
+          FILE_DIR=$(dirname "${DOCKERFILE}")
+          PARENT_DIR=$(basename "${FILE_DIR}")
+          GRANDPARENT_DIR=$(basename $(dirname "${FILE_DIR}"))
+          IMAGE_TAG="${GRANDPARENT_DIR}_${PARENT_DIR}"
 
-            echo "构建镜像: ${IMAGE_TAG}"
+          echo "构建镜像: ${IMAGE_TAG}"
+          
+          # 构建镜像
+          docker build -t napcat:${IMAGE_TAG} "${FILE_DIR}"
 
-            # 构建镜像
-            docker build -t napcat:${IMAGE_TAG} "${FOLDER}"
+          # 推送到 GitHub 容器注册表
+          echo "${{ secrets.GHCR_KEY }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
+          GHCR_IMAGE_TAG="ghcr.io/${{ secrets.GHCR_USERNAME }}/napcat:${IMAGE_TAG}"
+          docker tag "napcat:${IMAGE_TAG}" "${GHCR_IMAGE_TAG}"
+          docker push "${GHCR_IMAGE_TAG}"
 
-            # 推送到 GitHub 容器注册表
-            echo "${{ secrets.GHCR_KEY }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
-            GHCR_IMAGE_TAG="ghcr.io/${{ secrets.GHCR_USERNAME }}/napcat:${IMAGE_TAG}"
-            docker tag "napcat:${IMAGE_TAG}" "${GHCR_IMAGE_TAG}"
-            docker push "${GHCR_IMAGE_TAG}"
+          # 推送到 Docker Hub
+          echo "${{ secrets.DOCKER_PASSWD }}" | docker login docker.io -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          DOCKER_IMAGE_TAG="docker.io/${{ secrets.DOCKER_USERNAME }}/napcat:${IMAGE_TAG}"
+          docker tag "napcat:${IMAGE_TAG}" "${DOCKER_IMAGE_TAG}"
+          docker push "${DOCKER_IMAGE_TAG}"
 
-            # 推送到 Docker Hub
-            echo "${{ secrets.DOCKER_PASSWD }}" | docker login docker.io -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-            DOCKER_IMAGE_TAG="docker.io/${{ secrets.DOCKER_USERNAME }}/napcat:${IMAGE_TAG}"
-            docker tag "napcat:${IMAGE_TAG}" "${DOCKER_IMAGE_TAG}"
-            docker push "${DOCKER_IMAGE_TAG}"
+          # 推送到阿里云容器镜像服务
+          echo "${{ secrets.ALICLOUD_PASSWORD }}" | docker login "${{ secrets.ALICLOUD_REGISTRY }}" -u "${{ secrets.ALICLOUD_USERNAME }}" --password-stdin
+          ALICLOUD_IMAGE_TAG="${{ secrets.ALICLOUD_REGISTRY }}/${{ secrets.ALICLOUD_NAMESPACE }}/napcat:${IMAGE_TAG}"
+          docker tag "napcat:${IMAGE_TAG}" "${ALICLOUD_IMAGE_TAG}"
+          docker push "${ALICLOUD_IMAGE_TAG}"
 
-            # 推送到阿里云容器镜像服务
-            echo "${{ secrets.ALICLOUD_PASSWORD }}" | docker login "${{ secrets.ALICLOUD_REGISTRY }}" -u "${{ secrets.ALICLOUD_USERNAME }}" --password-stdin
-            ALICLOUD_IMAGE_TAG="${{ secrets.ALICLOUD_REGISTRY }}/${{ secrets.ALICLOUD_NAMESPACE }}/napcat:${IMAGE_TAG}"
-            docker tag "napcat:${IMAGE_TAG}" "${ALICLOUD_IMAGE_TAG}"
-            docker push "${ALICLOUD_IMAGE_TAG}"
-          else
-            echo "跳过文件夹: ${FOLDER}，因为没有 Dockerfile"
-          fi
         done
