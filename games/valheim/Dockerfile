@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # 添加容器用户，添加 i386 架构支持，更新和安装必要的软件包，设置时区和语言环境
 RUN useradd -m -d /home/container -s /bin/bash container \
-    && sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources \
+    #&& sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources \
     && dpkg --add-architecture i386 \
     && apt update \
     && apt upgrade -y \

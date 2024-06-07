@@ -5,7 +5,8 @@ LABEL author="蝼蚁梦" maintainer="aopkcn@qq.com"
 ENV DEBIAN_FRONTEND=noninteractive
 # 安装必要的软件包
 RUN  useradd -m -d /home/container -s /bin/bash container \ 
-     && sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources \
+
+     #&& sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list.d/debian.sources \
      && apt update \
             && apt install -y \
             libnss3 \
